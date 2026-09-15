@@ -22,7 +22,7 @@ import { HOSTED_HELPER_BODY_LIMIT, type HostedHelpers } from './hosted-helpers.j
 import { startupDiagnostic, type StartupDiagnostic } from './startup-diagnostics.js';
 
 export interface Services { db: Database; auth: AuthConfig; payments?: SandboxPayments; attestor?: TrialAttestor; minuteAttestor?: MinuteAttestor; guestMinuteAttestor?: GuestMinuteAttestor; appleRevoker?: AppleRevoker; hosted?: HostedVoice; accessRequests?: AccessRequests; aiReports?: AIReports;
-  onStartupDiagnostic?: (diagnostic: StartupDiagnostic) => void;
+  onStartupDiagnostic?: (diagnostic: StartupDiagnostic) => void | Promise<void>;
   hostedHelpers?: HostedHelpers;
   minuteCommerce?: { purchases: MinutePurchases; aiPurchases?: AIValuePurchases; fulfillment?: PurchaseFulfillmentRouter;
     stripe?: StripeMinuteProvider; play?: PlayMinuteProvider };
@@ -116,7 +116,7 @@ export function createApp(services: Services) {
     const diagnostic = startupDiagnostic(request.method, request.routeOptions.url, request.id, status, code, error);
     if (diagnostic) {
       reply.header('X-Mural-Error-Reference', diagnostic.reference);
-      try { services.onStartupDiagnostic?.(diagnostic); } catch { /* Diagnostics cannot change a request's outcome. */ }
+      try { void Promise.resolve(services.onStartupDiagnostic?.(diagnostic)).catch(() => {}); } catch { /* Diagnostics cannot change a request's outcome. */ }
     }
     if (error instanceof HelperSessionLimitError) {
       if (error.retryable) reply.header('Retry-After', String(Math.ceil(error.retryAfterMilliseconds! / 1000)));

@@ -6,7 +6,7 @@ import { startupDiagnostic, type StartupDiagnostic } from '../src/startup-diagno
 
 test('conversation rejection returns a generated reference and retains the original failure contract', async () => {
   const diagnostics: StartupDiagnostic[] = [];
-  const app = createApp({ db: {} as Database, auth: {}, onStartupDiagnostic: d => diagnostics.push(d) });
+  const app = createApp({ db: {} as Database, auth: {}, onStartupDiagnostic: d => { diagnostics.push(d); } });
   try {
     const response = await app.inject({ method: 'POST', url: '/v1/live/sessions',
       headers: { 'x-request-id': 'private-identity', authorization: 'Bearer private-token' },
@@ -38,4 +38,15 @@ test('diagnostics contain fixed operation names and allowlisted failure categori
   assert.equal(startupDiagnostic('GET', '/v1/account', id, 500, 'service_unavailable', secret), undefined);
   assert.equal(startupDiagnostic('GET', '/v1/minutes', 'private-identity', 500, 'service_unavailable', secret), undefined);
   assert.equal(startupDiagnostic('GET', '/v1/minutes', id, 500, 'private-provider-key', {})?.reason, 'internal');
+});
+
+test('a rejected asynchronous observer cannot become an unhandled rejection', async () => {
+  const app = createApp({ db: {} as Database, auth: {}, onStartupDiagnostic: async () => { throw new Error('observer'); } });
+  try {
+    const response = await app.inject({ method: 'GET', url: '/v1/minutes' });
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(response.statusCode, 401);
+    assert.equal(response.json().error.code, 'sign_in_required');
+    assert.match(String(response.headers['x-mural-error-reference']), /^[a-f0-9]{12}$/);
+  } finally { await app.close(); }
 });
