@@ -287,6 +287,20 @@ class CaptionParityTest {
         if (!microphone.isDisplayed()) microphone.performScrollTo()
         microphone.assertIsDisplayed()
         compose.onNodeWithTag("floating-navigation").assertIsDisplayed()
+
+        // Large text uses the page scroller. A long reply and its reading must stay
+        // reachable without requiring both languages to fit on screen at once.
+        compose.onNodeWithTag("pinyin-toggle").performScrollTo().performClick()
+        show("zh", sentence + "今天我们可以聊一聊你的生活。你喜欢喝咖啡还是喝茶？如果你有时间，我们可以一起去附近的咖啡馆，再去商店买一点儿东西。你觉得怎么样？你也可以告诉我你最喜欢的食物，或者说说你明天想做什么。",
+            "I want to go to the bank, then travel. We can talk about your life, visit a café, and buy a few things. What would you like to do tomorrow?")
+        compose.onNodeWithTag("target-caption").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("pinyin-reading").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("pinyin-toggle").performScrollTo().performClick()
+        compose.onNodeWithTag("pinyin-reading").assertDoesNotExist()
+        compose.onNodeWithTag("meaning-caption").performScrollTo().assertIsDisplayed()
+        if (!microphone.isDisplayed()) microphone.performScrollTo()
+        microphone.assertIsDisplayed()
+        compose.onNodeWithTag("floating-navigation").assertIsDisplayed()
     }
 
     @Test fun longMandarinReplyKeepsBothCaptionsVisibleAndEveryReadingReachable() {
