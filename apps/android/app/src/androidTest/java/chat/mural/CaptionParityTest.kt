@@ -305,9 +305,12 @@ class CaptionParityTest {
 
     @Test fun longMandarinReplyKeepsBothCaptionsVisibleAndEveryReadingReachable() {
         val sentence = "你好！很高兴认识你。你的中文说得很好。今天我们可以聊一聊你的生活。你喜欢喝咖啡还是喝茶？如果你有时间，我们可以一起去附近的咖啡馆，然后去银行，再去商店买一点儿东西。你觉得怎么样？你也可以告诉我你最喜欢的食物，或者说说你明天想做什么。"
+        android.util.Log.i("MuralCaptionCheck", "Long caption: render")
         show("zh", sentence, "Hello! Nice to meet you. Your Chinese is good. We can go to a café, then the bank, and buy a few things. What do you think?")
         assertTextVisible("target-caption", false); assertTextVisible("meaning-caption", false)
+        android.util.Log.i("MuralCaptionCheck", "Long caption: capture")
         capture("mandarin-long-caption")
+        android.util.Log.i("MuralCaptionCheck", "Long caption: scroll reading")
         val target = compose.onNodeWithTag("target-passage-scroll")
         val meaning = compose.onNodeWithTag("meaning-passage-scroll").fetchSemanticsNode().boundsInRoot
         val range = target.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
@@ -318,5 +321,6 @@ class CaptionParityTest {
         compose.onNodeWithTag("pinyin-reading").assertDoesNotExist()
         compose.onNodeWithTag("start-conversation").assertIsDisplayed()
         compose.onNodeWithTag("floating-navigation").assertIsDisplayed()
+        android.util.Log.i("MuralCaptionCheck", "Long caption: verified")
     }
 }
