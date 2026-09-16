@@ -295,7 +295,7 @@ import MuralCore
                 if Date().timeIntervalSince(session.startedAt) > Double(self.store.preferences.sessionMinutes * 60) {
                     self.notice = "You’ve reached your conversation time limit."; self.end(reason: "Time limit"); return
                 }
-                if Date().timeIntervalSince(self.lastActivity) > 120 {
+                if SessionLimits.endsForInactivity(voice: true, idleSeconds: Date().timeIntervalSince(self.lastActivity)) {
                     self.notice = "Mural ended this quiet session to avoid running up usage."; self.end(reason: "Inactivity"); return
                 }
                 self.pendingCommands = self.pendingCommands.filter { Date().timeIntervalSince($0.value) <= 20 }

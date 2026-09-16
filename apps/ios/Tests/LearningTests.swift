@@ -2,6 +2,13 @@ import XCTest
 @testable import MuralCore
 
 final class LearningTests: XCTestCase {
+    func testVoiceIdleEndsAfterThirtySeconds() {
+        XCTAssertEqual(SessionLimits.idleVoiceSeconds, 30)
+        XCTAssertFalse(SessionLimits.endsForInactivity(voice: true, idleSeconds: 29))
+        XCTAssertTrue(SessionLimits.endsForInactivity(voice: true, idleSeconds: 30))
+        XCTAssertTrue(SessionLimits.endsForInactivity(voice: true, idleSeconds: 31))
+        XCTAssertFalse(SessionLimits.endsForInactivity(voice: false, idleSeconds: 600))
+    }
     func fixture(day: Double = 0, theme: String = "walk", supported: Bool = false, kind: EvidenceKind = .independent) -> SessionRecord {
         let date = Date(timeIntervalSince1970: 1_780_000_000 + day * 86400)
         var s = SessionRecord(themeID: theme)
